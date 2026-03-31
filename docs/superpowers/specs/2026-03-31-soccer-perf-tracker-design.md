@@ -44,7 +44,7 @@ Stores every synced Strava activity (runs + soccer only).
 |--------|------|-------|
 | id | uuid (PK) | `gen_random_uuid()` |
 | user_id | uuid (FK → auth.users) | cascade delete |
-| strava_id | bigint, unique | prevents duplicate syncs |
+| strava_id | bigint | unique per user (composite unique on `user_id, strava_id`) |
 | activity_type | text | `'match'` or `'run'` |
 | name | text | from Strava or user-entered |
 | started_at | timestamptz | when it started |
@@ -100,7 +100,7 @@ One row per user. Stores OAuth credentials for Strava sync.
 ### Indexes
 
 - `activities(user_id, activity_type, started_at desc)` — main feed query
-- `match_details(format, position)` — stats breakdowns
+- `match_details(user_id, format, position)` — stats breakdowns
 
 ## Strava Integration
 
@@ -133,6 +133,12 @@ One row per user. Stores OAuth credentials for Strava sync.
 - Upserts by `strava_id` to prevent duplicates
 - Returns count of synced activities
 
+### Error handling
+
+- **Strava API down / network error**: sync fails gracefully, error toast shown ("Sync failed — try again in a minute")
+- **Token refresh fails (401 from Strava)**: clear stored tokens, show "Reconnect Strava" button on dashboard. User re-authorizes via the normal OAuth flow.
+- **Strava access revoked**: same as token refresh failure — 401 triggers token cleanup and reconnect prompt.
+
 ### No webhooks in v1
 
 Manual sync is sufficient for personal use. Strava webhooks can be added later if needed.
@@ -154,6 +160,7 @@ Two modes:
 - Same form but no Strava data section
 - User must enter `match_date` manually
 - `activity_id` is null, `user_id` set from session
+- Route: `/log/new`
 
 ### Form UI
 
@@ -170,7 +177,7 @@ Two modes:
 ### Layout (stats-first)
 
 **Header area:**
-- "Your season" title with date range (rolling 4 weeks or current month)
+- "Your season" title with date range (rolling 4 weeks)
 - "Sync now" button — shows loading spinner during sync, toast notification on completion ("Synced 3 new activities" or "Already up to date")
 
 **Stat cards row (top):**
@@ -208,7 +215,7 @@ src/
     log/
       [activityId]/
         page.tsx            # Log match details (linked)
-      standalone/
+      new/
         page.tsx            # Log match details (standalone)
     api/
       strava/
