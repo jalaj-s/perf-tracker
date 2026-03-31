@@ -75,7 +75,7 @@ Soccer-specific data you add after each game. One-to-one with an activity, or st
 | assists | integer | default 0 |
 | rating | integer | check 1-10 |
 | notes | text | free-form |
-| match_date | timestamptz | fallback when no linked activity |
+| match_date | timestamptz | always populated — copied from `activities.started_at` when linked, entered manually for standalone. Single field to sort/filter by. |
 | created_at | timestamptz | default `now()` |
 
 ### `strava_tokens`
@@ -130,7 +130,7 @@ One row per user. Stores OAuth credentials for Strava sync.
   - `sport_type === "Soccer"` or `type === "Soccer"`
   - Name contains "soccer" or "football" (case-insensitive)
 - Maps Strava units (meters, seconds) to display units (miles, minutes, pace string)
-- Upserts by `strava_id` to prevent duplicates
+- Upserts on composite `(user_id, strava_id)` to prevent duplicates
 - Returns count of synced activities
 
 ### Error handling
