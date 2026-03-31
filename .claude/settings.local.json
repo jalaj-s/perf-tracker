@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "Bash(npx create-next-app@14 . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git)",
+      "Bash(yes)",
+      "Read(//Users/jalaj.singh/Downloads/**)",
+      "Bash(cp -r perf-tracker/.env.local /tmp/env_local_backup)",
+      "Bash(cp -r perf-tracker/.gitignore /tmp/gitignore_backup)",
+      "Bash(cp -r perf-tracker/app_architecture_overview.svg /tmp/arch_svg_backup)",
+      "Bash(cp -r perf-tracker/docs /tmp/docs_backup)",
+      "Bash(npx create-next-app@14 perf-tracker-scaffold --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git)",
+      "Bash(# Restore backed up files\ncp /tmp/env_local_backup /Users/jalaj.singh/Downloads/perf-tracker/.env.local\ncp /tmp/arch_svg_backup /Users/jalaj.singh/Downloads/perf-tracker/app_architecture_overview.svg\ncp -r /tmp/docs_backup /Users/jalaj.singh/Downloads/perf-tracker/docs\necho \"Restored\")",
+      "Bash(npm install:*)"
+    ]
+  }
+}
