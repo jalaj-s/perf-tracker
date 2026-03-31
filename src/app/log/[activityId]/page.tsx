@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import MatchForm from "@/components/MatchForm";
 import { Activity } from "@/lib/types";
 
@@ -25,9 +26,9 @@ export default async function LogMatchPage({
 
   return (
     <div className="min-h-screen p-6 max-w-2xl mx-auto">
-      <a href="/" className="text-sm text-gray-500 hover:text-gray-700 mb-4 inline-block">
+      <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 mb-4 inline-block">
         &larr; Back to dashboard
-      </a>
+      </Link>
       <h1 className="text-2xl font-bold mb-6">Log match details</h1>
       <MatchForm activity={activity as Activity} />
     </div>

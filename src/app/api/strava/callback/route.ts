@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createServerClient } from "@supabase/ssr";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
   if (!code) {
     return NextResponse.json({ error: "No code provided" }, { status: 400 });
+  }
+
+  // Verify CSRF state
+  const state = req.nextUrl.searchParams.get("state");
+  const storedState = req.cookies.get("strava_oauth_state")?.value;
+  if (!state || state !== storedState) {
+    return NextResponse.json({ error: "Invalid OAuth state" }, { status: 403 });
   }
 
   const supabase = await createClient();
@@ -35,16 +42,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const serviceDb = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        getAll() { return []; },
-        setAll() {},
-      },
-    }
-  );
+  const serviceDb = createServiceClient();
 
   const { error } = await serviceDb.from("strava_tokens").upsert(
     {
@@ -52,7 +50,7 @@ export async function GET(req: NextRequest) {
       access_token: tokenData.access_token,
       refresh_token: tokenData.refresh_token,
       expires_at: tokenData.expires_at,
-      strava_athlete_id: tokenData.athlete.id,
+      strava_athlete_id: tokenData.athlete?.id ?? null,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id" }
@@ -65,5 +63,8 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  return NextResponse.redirect(new URL("/", req.url));
+  // Clear the OAuth state cookie
+  const response = NextResponse.redirect(new URL("/", req.url));
+  response.cookies.delete("strava_oauth_state");
+  return response;
 }

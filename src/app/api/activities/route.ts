@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createServerClient } from "@supabase/ssr";
+import { createServiceClient } from "@/lib/supabase/service";
 
 // GET: fetch activities with optional type filter
 export async function GET(req: NextRequest) {
@@ -52,16 +52,8 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
 
-  const serviceDb = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        getAll() { return []; },
-        setAll() {},
-      },
-    }
-  );
+  // Service role needed for upsert on activity_id (unique constraint)
+  const serviceDb = createServiceClient();
 
   // If linking to an activity, verify it belongs to this user
   if (body.activity_id) {
@@ -88,7 +80,7 @@ export async function POST(req: NextRequest) {
     position: body.position || null,
     goals: body.goals ?? 0,
     assists: body.assists ?? 0,
-    rating: body.rating || null,
+    rating: body.rating ?? null,
     result: body.result || null,
     notes: body.notes || null,
     match_date: body.match_date,

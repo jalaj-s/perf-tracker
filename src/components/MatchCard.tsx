@@ -54,7 +54,7 @@ export default function MatchCard({ activity }: MatchCardProps) {
       </p>
 
       <div className="flex items-center gap-3 mb-3">
-        <span className="text-2xl font-bold">{md.rating}/10</span>
+        {md.rating && <span className="text-2xl font-bold">{md.rating}/10</span>}
         <div className="flex gap-3 text-sm text-gray-500">
           <span>{md.goals} goal{md.goals !== 1 ? "s" : ""} · {md.assists} assist{md.assists !== 1 ? "s" : ""}</span>
         </div>

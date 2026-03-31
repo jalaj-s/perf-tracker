@@ -179,6 +179,32 @@ export default async function Dashboard() {
             {matches.map((activity) => (
               <MatchCard key={activity.id} activity={activity} />
             ))}
+            {(standaloneMatches || []).map((md) => (
+              <div key={md.id} className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-2 mb-1">
+                  {md.league && (
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {md.league}
+                    </span>
+                  )}
+                  <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-0.5 rounded">
+                    {md.format}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 mb-3">
+                  {new Date(md.match_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  {md.position && ` \u00b7 ${md.position}`}
+                  {md.result && ` \u00b7 ${md.result}`}
+                </p>
+                <div className="flex items-center gap-3 mb-3">
+                  {md.rating && <span className="text-2xl font-bold">{md.rating}/10</span>}
+                  <span className="text-sm text-gray-500">
+                    {md.goals} goal{md.goals !== 1 ? "s" : ""} {"\u00b7"} {md.assists} assist{md.assists !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                {md.notes && <p className="text-sm text-gray-500 italic">{md.notes}</p>}
+              </div>
+            ))}
           </div>
         )}
       </div>

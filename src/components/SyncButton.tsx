@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SyncButton() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   async function handleSync() {
     setLoading(true);
@@ -30,7 +32,7 @@ export default function SyncButton() {
       }
 
       if (data.synced > 0) {
-        window.location.reload();
+        router.refresh();
       }
     } catch {
       setMessage("Sync failed \u2014 try again in a minute");

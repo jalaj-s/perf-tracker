@@ -1,4 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServiceClient } from "./supabase/service";
 import { StravaActivity } from "./types";
 
 const STRAVA_API = "https://www.strava.com/api/v3";
@@ -17,8 +17,12 @@ export function calcPace(distMeters: number, timeSecs: number): string | null {
   if (!distMeters || !timeSecs) return null;
   const miles = distMeters / 1609.34;
   const totalMinsPerMile = timeSecs / 60 / miles;
-  const mins = Math.floor(totalMinsPerMile);
-  const secs = Math.round((totalMinsPerMile - mins) * 60);
+  let mins = Math.floor(totalMinsPerMile);
+  let secs = Math.round((totalMinsPerMile - mins) * 60);
+  if (secs === 60) {
+    mins += 1;
+    secs = 0;
+  }
   return `${mins}'${secs.toString().padStart(2, "0")}"/mi`;
 }
 
@@ -67,21 +71,8 @@ export function mapStravaActivity(
 
 // --- Server-side helpers (require Supabase + env) ---
 
-function getServiceSupabase() {
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        getAll() { return []; },
-        setAll() {},
-      },
-    }
-  );
-}
-
 export async function getValidToken(userId: string): Promise<string> {
-  const db = getServiceSupabase();
+  const db = createServiceClient();
 
   const { data: tokens } = await db
     .from("strava_tokens")

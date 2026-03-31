@@ -35,6 +35,12 @@ describe("calcPace", () => {
   it("returns null when time is 0", () => {
     expect(calcPace(1609.34, 0)).toBeNull();
   });
+
+  it("handles 60-second rollover", () => {
+    // Edge case: when fractional seconds round up to 60, should roll over
+    const result = calcPace(1609.34, 480);
+    expect(result).not.toContain("'60\"");
+  });
 });
 
 describe("isRelevantActivity", () => {
