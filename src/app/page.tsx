@@ -6,9 +6,46 @@ import MatchCard from "@/components/MatchCard";
 import RunCard from "@/components/RunCard";
 import Sparkline from "@/components/Sparkline";
 import SyncButton from "@/components/SyncButton";
+import RangePicker from "@/components/RangePicker";
 import Link from "next/link";
 
-export default async function Dashboard() {
+function getDateRange(range: string): { start: Date | null; label: string } {
+  const now = new Date();
+  switch (range) {
+    case "3m": {
+      const d = new Date();
+      d.setMonth(d.getMonth() - 3);
+      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` };
+    }
+    case "6m": {
+      const d = new Date();
+      d.setMonth(d.getMonth() - 6);
+      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` };
+    }
+    case "1y": {
+      const d = new Date();
+      d.setFullYear(d.getFullYear() - 1);
+      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` };
+    }
+    case "all":
+      return { start: null, label: "All time" };
+    default: {
+      const d = new Date();
+      d.setDate(d.getDate() - 28);
+      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` };
+    }
+  }
+}
+
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ range?: string }>;
+}) {
+  const { range: rangeParam } = await searchParams;
+  const range = rangeParam || "4w";
+  const { start, label: dateRange } = getDateRange(range);
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -23,17 +60,18 @@ export default async function Dashboard() {
 
   const stravaConnected = !!tokens;
 
-  // Rolling 4-week window
-  const fourWeeksAgo = new Date();
-  fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
-
   // Fetch activities with match details
-  const { data: rawActivities } = await supabase
+  let activitiesQuery = supabase
     .from("activities")
     .select("*, match_details(*, league:leagues(*))")
     .eq("user_id", user.id)
-    .gte("started_at", fourWeeksAgo.toISOString())
     .order("started_at", { ascending: false });
+
+  if (start) {
+    activitiesQuery = activitiesQuery.gte("started_at", start.toISOString());
+  }
+
+  const { data: rawActivities } = await activitiesQuery;
 
   const activities: ActivityWithMatch[] = (rawActivities || []).map((a) => ({
     ...a,
@@ -43,13 +81,18 @@ export default async function Dashboard() {
   }));
 
   // Fetch standalone match details (no linked activity)
-  const { data: standaloneMatches } = await supabase
+  let standaloneQuery = supabase
     .from("match_details")
     .select("*, league:leagues(*)")
     .eq("user_id", user.id)
     .is("activity_id", null)
-    .gte("match_date", fourWeeksAgo.toISOString())
     .order("match_date", { ascending: false });
+
+  if (start) {
+    standaloneQuery = standaloneQuery.gte("match_date", start.toISOString());
+  }
+
+  const { data: standaloneMatches } = await standaloneQuery;
 
   // Split by type
   const matches = activities.filter((a) => a.activity_type === "match");
@@ -104,13 +147,10 @@ export default async function Dashboard() {
       value: m.rating!,
     }));
 
-  // Date range for header
-  const dateRange = `${fourWeeksAgo.toLocaleDateString("en-US", { month: "short", day: "numeric" })} \u2013 ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
-
   return (
     <div className="min-h-screen p-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold">Your season</h1>
           <p className="text-sm text-gray-500">{dateRange}</p>
@@ -135,6 +175,11 @@ export default async function Dashboard() {
             Log match
           </Link>
         </div>
+      </div>
+
+      {/* Range picker */}
+      <div className="mb-6">
+        <RangePicker />
       </div>
 
       {/* Stat cards */}
