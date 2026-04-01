@@ -1,29 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Activity } from "@/lib/types";
+import { League } from "@/lib/types";
 import RatingDots from "./RatingDots";
 
 const POSITIONS = [
   "GK", "CB", "LB", "RB", "CDM", "CM", "CAM", "LM", "RM", "LW", "RW", "ST",
 ];
 
-const LEAGUES = [
-  "Friday night league",
-  "Sunday competitive",
-  "Tuesday night league",
-  "Pickup",
-  "Other",
-];
-
 interface MatchFormProps {
   activity?: Activity;
+  initialLeagues: League[];
 }
 
-export default function MatchForm({ activity }: MatchFormProps) {
-  const [format, setFormat] = useState<"7v7" | "11v11">("7v7");
-  const [league, setLeague] = useState(LEAGUES[0]);
-  const [position, setPosition] = useState("CM");
+export default function MatchForm({ activity, initialLeagues }: MatchFormProps) {
+  const [leagues, setLeagues] = useState<League[]>(initialLeagues);
+  const [leagueId, setLeagueId] = useState(leagues[0]?.id || "");
+  const [showNewLeague, setShowNewLeague] = useState(leagues.length === 0);
+  const [positions, setPositions] = useState<string[]>(["CM"]);
   const [goals, setGoals] = useState(0);
   const [assists, setAssists] = useState(0);
   const [rating, setRating] = useState(7);
@@ -37,8 +32,70 @@ export default function MatchForm({ activity }: MatchFormProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // New league form state
+  const [newName, setNewName] = useState("");
+  const [newFormat, setNewFormat] = useState<"7v7" | "11v11">("7v7");
+  const [newLocation, setNewLocation] = useState("");
+  const [newOrganizer, setNewOrganizer] = useState("");
+  const [newCoed, setNewCoed] = useState(false);
+  const [savingLeague, setSavingLeague] = useState(false);
+
+  const selectedLeague = leagues.find((l) => l.id === leagueId);
+
+  function togglePosition(pos: string) {
+    setPositions((prev) =>
+      prev.includes(pos) ? prev.filter((p) => p !== pos) : [...prev, pos]
+    );
+  }
+
+  async function handleCreateLeague() {
+    if (!newName.trim()) return;
+    setSavingLeague(true);
+
+    try {
+      const res = await fetch("/api/leagues", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newName.trim(),
+          format: newFormat,
+          location: newLocation.trim() || null,
+          organizer: newOrganizer.trim() || null,
+          is_coed: newCoed,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Failed to create league");
+        return;
+      }
+
+      const league: League = await res.json();
+      setLeagues((prev) => [...prev, league].sort((a, b) => a.name.localeCompare(b.name)));
+      setLeagueId(league.id);
+      setShowNewLeague(false);
+      setNewName("");
+      setNewLocation("");
+      setNewOrganizer("");
+      setNewCoed(false);
+    } catch {
+      alert("Failed to create league");
+    } finally {
+      setSavingLeague(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!leagueId) {
+      alert("Please select or create a league");
+      return;
+    }
+    if (positions.length === 0) {
+      alert("Please select at least one position");
+      return;
+    }
     setSaving(true);
 
     try {
@@ -47,9 +104,8 @@ export default function MatchForm({ activity }: MatchFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           activity_id: activity?.id || null,
-          format,
-          league,
-          position,
+          league_id: leagueId,
+          positions,
           goals,
           assists,
           rating,
@@ -116,53 +172,136 @@ export default function MatchForm({ activity }: MatchFormProps) {
         </div>
       )}
 
-      {/* Format */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Format</label>
-        <div className="flex gap-2">
-          {(["7v7", "11v11"] as const).map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFormat(f)}
-              className={`px-4 py-2 rounded-lg border text-sm font-medium transition
-                ${format === f
-                  ? "bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200"
-                  : "border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400"
-                }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* League */}
+      {/* League picker */}
       <div>
         <label className="block text-sm font-medium mb-2">League</label>
-        <select
-          value={league}
-          onChange={(e) => setLeague(e.target.value)}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                     dark:bg-gray-900 dark:border-gray-700"
-        >
-          {LEAGUES.map((l) => (
-            <option key={l} value={l}>{l}</option>
-          ))}
-        </select>
+        {!showNewLeague && leagues.length > 0 && (
+          <>
+            <select
+              value={leagueId}
+              onChange={(e) => setLeagueId(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
+                         dark:bg-gray-900 dark:border-gray-700 mb-2"
+            >
+              {leagues.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name} · {l.format}
+                </option>
+              ))}
+            </select>
+            {selectedLeague && (
+              <div className="flex gap-2 text-xs text-gray-500 mb-2">
+                <span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">{selectedLeague.format}</span>
+                {selectedLeague.location && <span>{selectedLeague.location}</span>}
+                {selectedLeague.organizer && <span>· {selectedLeague.organizer}</span>}
+                {selectedLeague.is_coed && <span>· Co-ed</span>}
+              </div>
+            )}
+          </>
+        )}
+
+        {!showNewLeague && (
+          <button
+            type="button"
+            onClick={() => setShowNewLeague(true)}
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            + New league
+          </button>
+        )}
+
+        {/* Inline new league form */}
+        {showNewLeague && (
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="League name"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
+                         dark:bg-gray-900 dark:border-gray-700"
+            />
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Format</label>
+              <div className="flex gap-2">
+                {(["7v7", "11v11"] as const).map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => setNewFormat(f)}
+                    className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition
+                      ${newFormat === f
+                        ? "bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200"
+                        : "border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400"
+                      }`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <input
+              type="text"
+              value={newLocation}
+              onChange={(e) => setNewLocation(e.target.value)}
+              placeholder="Location (optional)"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
+                         dark:bg-gray-900 dark:border-gray-700"
+            />
+            <input
+              type="text"
+              value={newOrganizer}
+              onChange={(e) => setNewOrganizer(e.target.value)}
+              placeholder="Organizer (optional)"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
+                         dark:bg-gray-900 dark:border-gray-700"
+            />
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={newCoed}
+                onChange={(e) => setNewCoed(e.target.checked)}
+                className="rounded"
+              />
+              Co-ed
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleCreateLeague}
+                disabled={savingLeague || !newName.trim()}
+                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium
+                           hover:bg-blue-700 transition disabled:opacity-50"
+              >
+                {savingLeague ? "Saving..." : "Save league"}
+              </button>
+              {leagues.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowNewLeague(false)}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Position */}
+      {/* Position (multi-select) */}
       <div>
-        <label className="block text-sm font-medium mb-2">Position</label>
+        <label className="block text-sm font-medium mb-2">
+          Position{positions.length > 1 ? "s" : ""} ({positions.join(", ") || "none"})
+        </label>
         <div className="flex flex-wrap gap-2">
           {POSITIONS.map((pos) => (
             <button
               key={pos}
               type="button"
-              onClick={() => setPosition(pos)}
+              onClick={() => togglePosition(pos)}
               className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition
-                ${position === pos
+                ${positions.includes(pos)
                   ? "bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200"
                   : "border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400"
                 }`}
