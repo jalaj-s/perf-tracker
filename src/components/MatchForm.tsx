@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Activity, League } from "@/lib/types";
+import { Activity, League, MatchDetails } from "@/lib/types";
 import RatingDots from "./RatingDots";
 
 const POSITIONS = [
@@ -11,22 +11,25 @@ const POSITIONS = [
 interface MatchFormProps {
   activity?: Activity;
   initialLeagues: League[];
+  existingMatch?: MatchDetails;
 }
 
-export default function MatchForm({ activity, initialLeagues }: MatchFormProps) {
+export default function MatchForm({ activity, initialLeagues, existingMatch }: MatchFormProps) {
   const [leagues, setLeagues] = useState<League[]>(initialLeagues);
-  const [leagueId, setLeagueId] = useState(leagues[0]?.id || "");
+  const [leagueId, setLeagueId] = useState(existingMatch?.league_id || leagues[0]?.id || "");
   const [showNewLeague, setShowNewLeague] = useState(leagues.length === 0);
-  const [positions, setPositions] = useState<string[]>(["CM"]);
-  const [goals, setGoals] = useState(0);
-  const [assists, setAssists] = useState(0);
-  const [rating, setRating] = useState(7);
-  const [result, setResult] = useState("");
-  const [notes, setNotes] = useState("");
+  const [positions, setPositions] = useState<string[]>(existingMatch?.positions || ["CM"]);
+  const [goals, setGoals] = useState(existingMatch?.goals ?? 0);
+  const [assists, setAssists] = useState(existingMatch?.assists ?? 0);
+  const [rating, setRating] = useState(existingMatch?.rating ?? 7);
+  const [result, setResult] = useState(existingMatch?.result || "");
+  const [notes, setNotes] = useState(existingMatch?.notes || "");
   const [matchDate, setMatchDate] = useState(
-    activity
-      ? new Date(activity.started_at).toISOString().slice(0, 16)
-      : new Date().toISOString().slice(0, 16)
+    existingMatch?.match_date
+      ? new Date(existingMatch.match_date).toISOString().slice(0, 16)
+      : activity
+        ? new Date(activity.started_at).toISOString().slice(0, 16)
+        : new Date().toISOString().slice(0, 16)
   );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);

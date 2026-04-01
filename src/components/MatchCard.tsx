@@ -67,8 +67,15 @@ export default function MatchCard({ activity }: MatchCardProps) {
       </div>
 
       {md.notes && (
-        <p className="text-sm text-gray-500 italic">{md.notes}</p>
+        <p className="text-sm text-gray-500 italic mb-3">{md.notes}</p>
       )}
+
+      <Link
+        href={`/log/${activity.id}`}
+        className="text-sm text-gray-400 hover:text-gray-600 font-medium"
+      >
+        Edit
+      </Link>
     </div>
   );
 }

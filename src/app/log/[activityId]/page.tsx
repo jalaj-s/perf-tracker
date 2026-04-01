@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import MatchForm from "@/components/MatchForm";
-import { Activity } from "@/lib/types";
+import { Activity, MatchDetails } from "@/lib/types";
 
 export default async function LogMatchPage({
   params,
@@ -30,13 +30,26 @@ export default async function LogMatchPage({
     .eq("user_id", user.id)
     .order("name");
 
+  // Fetch existing match details if editing
+  const { data: existingMatch } = await supabase
+    .from("match_details")
+    .select("*")
+    .eq("activity_id", activityId)
+    .single();
+
   return (
     <div className="min-h-screen p-6 max-w-2xl mx-auto">
       <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 mb-4 inline-block">
         &larr; Back to dashboard
       </Link>
-      <h1 className="text-2xl font-bold mb-6">Log match details</h1>
-      <MatchForm activity={activity as Activity} initialLeagues={leagues || []} />
+      <h1 className="text-2xl font-bold mb-6">
+        {existingMatch ? "Edit match details" : "Log match details"}
+      </h1>
+      <MatchForm
+        activity={activity as Activity}
+        initialLeagues={leagues || []}
+        existingMatch={existingMatch as MatchDetails | undefined}
+      />
     </div>
   );
 }
