@@ -8,6 +8,8 @@ import Sparkline from "@/components/Sparkline";
 import SyncButton from "@/components/SyncButton";
 import RangePicker from "@/components/RangePicker";
 import LeagueFilter from "@/components/LeagueFilter";
+import InsightCard from "@/components/InsightCard";
+import { computeFormatInsight, computeLeagueInsight, computeRecoveryInsight, computeFitnessInsight } from "@/lib/insights";
 import Link from "next/link";
 
 function getDateRange(range: string): { start: Date | null; label: string } {
@@ -297,7 +299,7 @@ export default async function Dashboard({
       })()}
 
       {/* Recent runs */}
-      <div>
+      <div className="mb-8">
         <h2 className="text-lg font-bold mb-3">Recent runs</h2>
         {runs.length === 0 ? (
           <p className="text-sm text-gray-500">No runs yet. Sync from Strava to see them here.</p>
@@ -309,6 +311,72 @@ export default async function Dashboard({
           </div>
         )}
       </div>
+
+      {/* Insights */}
+      {(() => {
+        const formatInsight = computeFormatInsight(allMatchDetails, matches);
+        const leagueInsight = computeLeagueInsight(allMatchDetails);
+        const recoveryInsight = computeRecoveryInsight(matches, runs, allMatchDetails);
+        const fitnessInsight = computeFitnessInsight(matches);
+
+        const hasInsights = formatInsight || leagueInsight || recoveryInsight || fitnessInsight;
+        if (!hasInsights) return null;
+
+        return (
+          <div>
+            <h2 className="text-lg font-bold mb-3">Insights</h2>
+            <div className="space-y-3">
+              {formatInsight && (
+                <InsightCard title="Performance pattern">
+                  You rate yourself <strong>{formatInsight.diff} points higher</strong> in {formatInsight.higherFormat} games ({formatInsight.higherAvg}) than {formatInsight.lowerFormat} ({formatInsight.lowerAvg}).
+                  {(formatInsight.higherDist > 0 || formatInsight.lowerDist > 0) && (
+                    <> You also run {formatInsight.higherDist} mi avg in {formatInsight.higherFormat} vs {formatInsight.lowerDist} mi in {formatInsight.lowerFormat}.</>
+                  )}
+                </InsightCard>
+              )}
+
+              {leagueInsight && (
+                <InsightCard title="League breakdown">
+                  <div className="space-y-2">
+                    {leagueInsight.leagues.map((l) => (
+                      <div key={l.name} className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium text-gray-700 dark:text-gray-300">{l.name}</span>
+                          <span className="text-xs text-gray-400 ml-1">{l.format}</span>
+                        </div>
+                        <div className="flex gap-3 text-xs">
+                          <span>{l.matches} matches</span>
+                          <span>{l.avgRating} avg</span>
+                          <span>{l.goals}G / {l.assists}A</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </InsightCard>
+              )}
+
+              {recoveryInsight && (
+                <InsightCard title="Recovery flag">
+                  Your <strong>{recoveryInsight.lowRatedCount} games after long runs</strong> (over {recoveryInsight.threshold} mi) averaged <strong>{recoveryInsight.avgRatingAfterLong}/10</strong> vs <strong>{recoveryInsight.avgRatingOtherwise}/10</strong> otherwise. Consider spacing runs and match days further apart.
+                </InsightCard>
+              )}
+
+              {fitnessInsight && (
+                <InsightCard title="Fitness trend">
+                  Your avg heart rate has {fitnessInsight.hrChange < 0 ? "dropped" : "risen"} <strong>{Math.abs(fitnessInsight.hrChange)} bpm</strong> over this period
+                  {Math.abs(fitnessInsight.distanceChange) < 0.3
+                    ? " while distance stayed flat"
+                    : ` while distance ${fitnessInsight.distanceChange > 0 ? "increased" : "decreased"} by ${Math.abs(fitnessInsight.distanceChange)} mi`
+                  }.{" "}
+                  {fitnessInsight.hrChange < 0
+                    ? "Your fitness is improving."
+                    : "Your effort level is increasing."}
+                </InsightCard>
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
