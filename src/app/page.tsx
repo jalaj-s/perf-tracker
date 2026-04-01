@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { ActivityWithMatch, MatchDetails } from "@/lib/types";
+import { ActivityWithMatch, MatchDetailsWithLeague } from "@/lib/types";
 import StatCard from "@/components/StatCard";
 import MatchCard from "@/components/MatchCard";
 import RunCard from "@/components/RunCard";
@@ -56,7 +56,7 @@ export default async function Dashboard() {
   const runs = activities.filter((a) => a.activity_type === "run");
 
   // All match details (linked + standalone)
-  const allMatchDetails: MatchDetails[] = [
+  const allMatchDetails: MatchDetailsWithLeague[] = [
     ...matches.filter((m) => m.match_details).map((m) => m.match_details!),
     ...(standaloneMatches || []),
   ];

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Activity } from "@/lib/types";
-import { League } from "@/lib/types";
+import { useState } from "react";
+import { Activity, League } from "@/lib/types";
 import RatingDots from "./RatingDots";
 
 const POSITIONS = [

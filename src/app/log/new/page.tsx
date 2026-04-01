@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import MatchForm from "@/components/MatchForm";
-import { League } from "@/lib/types";
+
 
 export default async function NewMatchPage() {
   const supabase = await createClient();

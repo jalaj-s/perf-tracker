@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import MatchForm from "@/components/MatchForm";
-import { Activity, League } from "@/lib/types";
+import { Activity } from "@/lib/types";
 
 export default async function LogMatchPage({
   params,
