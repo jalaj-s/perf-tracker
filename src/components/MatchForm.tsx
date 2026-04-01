@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Activity, League, MatchDetails } from "@/lib/types";
 import RatingDots from "./RatingDots";
 
@@ -15,6 +16,7 @@ interface MatchFormProps {
 }
 
 export default function MatchForm({ activity, initialLeagues, existingMatch }: MatchFormProps) {
+  const router = useRouter();
   const [leagues, setLeagues] = useState<League[]>(initialLeagues);
   const [leagueId, setLeagueId] = useState(existingMatch?.league_id || leagues[0]?.id || "");
   const [showNewLeague, setShowNewLeague] = useState(leagues.length === 0);
@@ -32,7 +34,6 @@ export default function MatchForm({ activity, initialLeagues, existingMatch }: M
         : new Date().toISOString().slice(0, 16)
   );
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   // New league form state
   const [newName, setNewName] = useState("");
@@ -118,24 +119,13 @@ export default function MatchForm({ activity, initialLeagues, existingMatch }: M
       });
 
       if (!res.ok) throw new Error("Failed to save");
-      setSaved(true);
+      router.push("/");
     } catch (err) {
       console.error(err);
       alert("Failed to save match details");
     } finally {
       setSaving(false);
     }
-  }
-
-  if (saved) {
-    return (
-      <div className="max-w-lg text-center py-12">
-        <h2 className="text-xl font-bold mb-2">Match logged!</h2>
-        <a href="/" className="text-blue-600 hover:text-blue-700 font-medium">
-          Back to dashboard
-        </a>
-      </div>
-    );
   }
 
   return (
