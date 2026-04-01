@@ -16,14 +16,24 @@ export interface Activity {
   updated_at: string;
 }
 
+export interface League {
+  id: string;
+  user_id: string;
+  name: string;
+  format: "7v7" | "11v11";
+  location: string | null;
+  organizer: string | null;
+  is_coed: boolean;
+  created_at: string;
+}
+
 export interface MatchDetails {
   id: string;
   activity_id: string | null;
   user_id: string;
-  league: string | null;
-  format: "7v7" | "11v11";
+  league_id: string;
   result: string | null;
-  position: string | null;
+  positions: string[] | null;
   goals: number;
   assists: number;
   rating: number | null;
@@ -32,8 +42,12 @@ export interface MatchDetails {
   created_at: string;
 }
 
+export interface MatchDetailsWithLeague extends MatchDetails {
+  league: League;
+}
+
 export interface ActivityWithMatch extends Activity {
-  match_details: MatchDetails | null;
+  match_details: MatchDetailsWithLeague | null;
 }
 
 export interface StravaTokens {
