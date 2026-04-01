@@ -1,12 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { ActivityWithMatch, MatchDetailsWithLeague } from "@/lib/types";
+import { ActivityWithMatch, League, MatchDetailsWithLeague } from "@/lib/types";
 import StatCard from "@/components/StatCard";
 import MatchCard from "@/components/MatchCard";
 import RunCard from "@/components/RunCard";
 import Sparkline from "@/components/Sparkline";
 import SyncButton from "@/components/SyncButton";
 import RangePicker from "@/components/RangePicker";
+import LeagueFilter from "@/components/LeagueFilter";
 import Link from "next/link";
 
 function getDateRange(range: string): { start: Date | null; label: string } {
@@ -40,10 +41,11 @@ function getDateRange(range: string): { start: Date | null; label: string } {
 export default async function Dashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string }>;
+  searchParams: Promise<{ range?: string; league?: string }>;
 }) {
-  const { range: rangeParam } = await searchParams;
+  const { range: rangeParam, league: leagueParam } = await searchParams;
   const range = rangeParam || "4w";
+  const leagueFilter = leagueParam || "all";
   const { start, label: dateRange } = getDateRange(range);
 
   const supabase = await createClient();
@@ -59,6 +61,15 @@ export default async function Dashboard({
     .single();
 
   const stravaConnected = !!tokens;
+
+  // Fetch user's leagues for the filter
+  const { data: userLeagues } = await supabase
+    .from("leagues")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("name");
+
+  const leagues: League[] = userLeagues || [];
 
   // Fetch activities with match details
   let activitiesQuery = supabase
@@ -94,14 +105,24 @@ export default async function Dashboard({
 
   const { data: standaloneMatches } = await standaloneQuery;
 
+  // Apply league filter
+  const filteredActivities = leagueFilter === "all"
+    ? activities
+    : activities.filter((a) =>
+        a.activity_type === "run" || a.match_details?.league_id === leagueFilter
+      );
+  const filteredStandalone = leagueFilter === "all"
+    ? (standaloneMatches || [])
+    : (standaloneMatches || []).filter((md) => md.league_id === leagueFilter);
+
   // Split by type
-  const matches = activities.filter((a) => a.activity_type === "match");
-  const runs = activities.filter((a) => a.activity_type === "run");
+  const matches = filteredActivities.filter((a) => a.activity_type === "match");
+  const runs = filteredActivities.filter((a) => a.activity_type === "run");
 
   // All match details (linked + standalone)
   const allMatchDetails: MatchDetailsWithLeague[] = [
     ...matches.filter((m) => m.match_details).map((m) => m.match_details!),
-    ...(standaloneMatches || []),
+    ...filteredStandalone,
   ];
 
   // Stats
@@ -177,9 +198,10 @@ export default async function Dashboard({
         </div>
       </div>
 
-      {/* Range picker */}
-      <div className="mb-6">
+      {/* Filters */}
+      <div className="flex items-center gap-3 mb-6">
         <RangePicker />
+        <LeagueFilter leagues={leagues} />
       </div>
 
       {/* Stat cards */}
@@ -217,14 +239,14 @@ export default async function Dashboard({
       {/* Recent matches */}
       <div className="mb-8">
         <h2 className="text-lg font-bold mb-3">Recent matches</h2>
-        {matches.length === 0 && (standaloneMatches || []).length === 0 ? (
+        {matches.length === 0 && filteredStandalone.length === 0 ? (
           <p className="text-sm text-gray-500">No matches yet. Sync from Strava or log one manually.</p>
         ) : (
           <div className="space-y-3">
             {matches.map((activity) => (
               <MatchCard key={activity.id} activity={activity} />
             ))}
-            {(standaloneMatches || []).map((md) => (
+            {filteredStandalone.map((md) => (
               <div key={md.id} className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
                 <div className="flex items-center gap-2 mb-1">
                   {md.league && (
