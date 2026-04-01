@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from("activities")
-    .select("*, match_details(*)")
+    .select("*, match_details(*, league:leagues(*))")
     .eq("user_id", user.id)
     .order("started_at", { ascending: false });
 
@@ -72,12 +72,23 @@ export async function POST(req: NextRequest) {
     body.match_date = body.match_date || activity.started_at;
   }
 
+  // Validate league exists and belongs to user
+  const { data: league } = await serviceDb
+    .from("leagues")
+    .select("id")
+    .eq("id", body.league_id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!league) {
+    return NextResponse.json({ error: "League not found" }, { status: 404 });
+  }
+
   const matchData = {
     activity_id: body.activity_id || null,
     user_id: user.id,
-    format: body.format,
-    league: body.league || null,
-    position: body.position || null,
+    league_id: body.league_id,
+    positions: body.positions || null,
     goals: body.goals ?? 0,
     assists: body.assists ?? 0,
     rating: body.rating ?? null,
