@@ -30,7 +30,7 @@ export default async function Dashboard() {
   // Fetch activities with match details
   const { data: rawActivities } = await supabase
     .from("activities")
-    .select("*, match_details(*)")
+    .select("*, match_details(*, league:leagues(*))")
     .eq("user_id", user.id)
     .gte("started_at", fourWeeksAgo.toISOString())
     .order("started_at", { ascending: false });
@@ -45,7 +45,7 @@ export default async function Dashboard() {
   // Fetch standalone match details (no linked activity)
   const { data: standaloneMatches } = await supabase
     .from("match_details")
-    .select("*")
+    .select("*, league:leagues(*)")
     .eq("user_id", user.id)
     .is("activity_id", null)
     .gte("match_date", fourWeeksAgo.toISOString())
@@ -63,8 +63,8 @@ export default async function Dashboard() {
 
   // Stats
   const matchCount = allMatchDetails.length;
-  const format7 = allMatchDetails.filter((m) => m.format === "7v7").length;
-  const format11 = allMatchDetails.filter((m) => m.format === "11v11").length;
+  const format7 = allMatchDetails.filter((m) => m.league?.format === "7v7").length;
+  const format11 = allMatchDetails.filter((m) => m.league?.format === "11v11").length;
 
   const totalGoals = allMatchDetails.reduce((sum, m) => sum + m.goals, 0);
   const totalAssists = allMatchDetails.reduce((sum, m) => sum + m.assists, 0);
@@ -184,16 +184,16 @@ export default async function Dashboard() {
                 <div className="flex items-center gap-2 mb-1">
                   {md.league && (
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {md.league}
+                      {md.league.name}
                     </span>
                   )}
                   <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-0.5 rounded">
-                    {md.format}
+                    {md.league?.format}
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 mb-3">
                   {new Date(md.match_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  {md.position && ` \u00b7 ${md.position}`}
+                  {md.positions && ` \u00b7 ${md.positions.join(" / ")}`}
                   {md.result && ` \u00b7 ${md.result}`}
                 </p>
                 <div className="flex items-center gap-3 mb-3">

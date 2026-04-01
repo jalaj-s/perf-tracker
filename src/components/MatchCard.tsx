@@ -39,17 +39,17 @@ export default function MatchCard({ activity }: MatchCardProps) {
       <div className="flex items-center gap-2 mb-1">
         {md.league && (
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {md.league}
+            {md.league.name}
           </span>
         )}
         <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 px-2 py-0.5 rounded">
-          {md.format}
+          {md.league.format}
         </span>
       </div>
 
       <p className="text-sm text-gray-500 mb-3">
         {date}
-        {md.position && ` · ${md.position}`}
+        {md.positions && ` · ${md.positions.join(" / ")}`}
         {md.result && ` · ${md.result}`}
       </p>
 
