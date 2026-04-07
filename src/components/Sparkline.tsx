@@ -1,12 +1,12 @@
 interface SparklineProps {
   data: { date: string; value: number }[];
-  height?: number;
-  width?: number;
 }
 
-export default function Sparkline({ data, height = 60, width = 300 }: SparklineProps) {
+export default function Sparkline({ data }: SparklineProps) {
   if (data.length < 2) return null;
 
+  const width = 300;
+  const height = 60;
   const values = data.map((d) => d.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -25,7 +25,7 @@ export default function Sparkline({ data, height = 60, width = 300 }: SparklineP
   const polyline = points.join(" ");
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} className="w-full" style={{ maxWidth: width }}>
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full" preserveAspectRatio="xMidYMid meet">
       <polyline
         points={polyline}
         fill="none"

@@ -134,3 +134,25 @@ export async function fetchStravaActivities(
   if (!res.ok) throw new Error(`Strava API error: ${res.status}`);
   return res.json();
 }
+
+export async function fetchStravaActivity(
+  accessToken: string,
+  activityId: number
+): Promise<StravaActivity> {
+  const res = await fetch(`${STRAVA_API}/activities/${activityId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!res.ok) throw new Error(`Strava API error: ${res.status}`);
+  return res.json();
+}
+
+export async function getUserByAthleteId(athleteId: number) {
+  const db = createServiceClient();
+  const { data } = await db
+    .from("strava_tokens")
+    .select("user_id")
+    .eq("strava_athlete_id", athleteId)
+    .single();
+  return data;
+}

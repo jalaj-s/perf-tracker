@@ -305,7 +305,7 @@ export default function MatchForm({ activity, initialLeagues, existingMatch }: M
       </div>
 
       {/* Goals + Assists */}
-      <div className="flex gap-6">
+      <div className="grid grid-cols-2 gap-4">
         {[
           { label: "Goals", value: goals, setValue: setGoals },
           { label: "Assists", value: assists, setValue: setAssists },
@@ -316,9 +316,9 @@ export default function MatchForm({ activity, initialLeagues, existingMatch }: M
               <button
                 type="button"
                 onClick={() => setValue(Math.max(0, value - 1))}
-                className="w-8 h-8 rounded-full border border-gray-200 flex items-center
-                           justify-center text-gray-500 hover:bg-gray-50
-                           dark:border-gray-700"
+                className="w-10 h-10 rounded-full border border-gray-200 flex items-center
+                           justify-center text-gray-500 hover:bg-gray-50 active:bg-gray-100
+                           dark:border-gray-700 dark:active:bg-gray-800"
               >
                 -
               </button>
@@ -326,9 +326,9 @@ export default function MatchForm({ activity, initialLeagues, existingMatch }: M
               <button
                 type="button"
                 onClick={() => setValue(value + 1)}
-                className="w-8 h-8 rounded-full border border-gray-200 flex items-center
-                           justify-center text-gray-500 hover:bg-gray-50
-                           dark:border-gray-700"
+                className="w-10 h-10 rounded-full border border-gray-200 flex items-center
+                           justify-center text-gray-500 hover:bg-gray-50 active:bg-gray-100
+                           dark:border-gray-700 dark:active:bg-gray-800"
               >
                 +
               </button>
@@ -375,8 +375,8 @@ export default function MatchForm({ activity, initialLeagues, existingMatch }: M
       <button
         type="submit"
         disabled={saving}
-        className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium
-                   hover:bg-blue-700 transition disabled:opacity-50"
+        className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium
+                   hover:bg-blue-700 active:bg-blue-800 transition disabled:opacity-50"
       >
         {saving ? "Saving..." : "Save match details"}
       </button>

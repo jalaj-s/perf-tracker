@@ -19,7 +19,7 @@ export default function MatchCard({ activity }: MatchCardProps) {
           <p className="font-medium">{activity.name || "Soccer"}</p>
           <span className="text-sm text-gray-500">{date}</span>
         </div>
-        <div className="flex gap-4 text-sm text-gray-500 mb-3">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mb-3">
           {activity.distance_miles && <span>{activity.distance_miles} mi</span>}
           {activity.avg_heart_rate && <span>{activity.avg_heart_rate} avg HR</span>}
           {activity.duration_minutes && <span>{Math.round(activity.duration_minutes)} min</span>}
@@ -36,7 +36,7 @@ export default function MatchCard({ activity }: MatchCardProps) {
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-100 dark:border-gray-800">
-      <div className="flex items-center gap-2 mb-1">
+      <div className="flex flex-wrap items-center gap-2 mb-1">
         {md.league && (
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             {md.league.name}
@@ -60,7 +60,7 @@ export default function MatchCard({ activity }: MatchCardProps) {
         </div>
       </div>
 
-      <div className="flex gap-4 text-sm text-gray-500 mb-3">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mb-3">
         {activity.distance_miles && <span>{activity.distance_miles} mi distance</span>}
         {activity.avg_heart_rate && <span>{activity.avg_heart_rate} avg HR</span>}
         {activity.avg_pace && <span>{activity.avg_pace} pace</span>}

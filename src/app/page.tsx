@@ -11,6 +11,7 @@ import LeagueFilter from "@/components/LeagueFilter";
 import InsightCard from "@/components/InsightCard";
 import { computeFormatInsight, computeLeagueInsight, computeRecoveryInsight, computeFitnessInsight } from "@/lib/insights";
 import Link from "next/link";
+import SignOutButton from "@/components/SignOutButton";
 
 function getDateRange(range: string): { start: Date | null; label: string } {
   const now = new Date();
@@ -171,20 +172,20 @@ export default async function Dashboard({
     }));
 
   return (
-    <div className="min-h-screen p-6 max-w-4xl mx-auto">
+    <div className="min-h-screen px-4 py-5 sm:p-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-2xl font-bold">Your season</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Your season</h1>
           <p className="text-sm text-gray-500">{dateRange}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {stravaConnected ? (
             <SyncButton />
           ) : (
             <a
               href="/api/strava/auth"
-              className="text-sm bg-orange-500 text-white px-3 py-1.5 rounded-lg
+              className="text-sm bg-orange-500 text-white px-3 py-2 rounded-lg
                          hover:bg-orange-600 transition"
             >
               Connect Strava
@@ -192,22 +193,23 @@ export default async function Dashboard({
           )}
           <Link
             href="/log/new"
-            className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg
+            className="text-sm bg-blue-600 text-white px-3 py-2 rounded-lg
                        hover:bg-blue-700 transition"
           >
             Log match
           </Link>
+          <SignOutButton />
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6">
         <RangePicker />
         <LeagueFilter leagues={leagues} />
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <StatCard
           label="Matches played"
           value={matchCount}
@@ -234,7 +236,7 @@ export default async function Dashboard({
       {sparklineData.length >= 2 && (
         <div className="mb-8">
           <p className="text-sm text-gray-500 mb-2">Rating trend</p>
-          <Sparkline data={sparklineData} width={600} height={60} />
+          <Sparkline data={sparklineData} />
         </div>
       )}
 

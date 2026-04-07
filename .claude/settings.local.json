@@ -11,7 +11,28 @@
       "Bash(cp -r perf-tracker/docs /tmp/docs_backup)",
       "Bash(npx create-next-app@14 perf-tracker-scaffold --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git)",
       "Bash(# Restore backed up files\ncp /tmp/env_local_backup /Users/jalaj.singh/Downloads/perf-tracker/.env.local\ncp /tmp/arch_svg_backup /Users/jalaj.singh/Downloads/perf-tracker/app_architecture_overview.svg\ncp -r /tmp/docs_backup /Users/jalaj.singh/Downloads/perf-tracker/docs\necho \"Restored\")",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(git config:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(gh repo:*)",
+      "Bash(gh auth:*)",
+      "Bash(npx vercel:*)",
+      "Bash(vercel env:*)",
+      "Bash(vercel:*)",
+      "Bash(cp /Users/jalaj.singh/Downloads/download.png /Users/jalaj.singh/Downloads/perf-tracker/src/app/icon.png)",
+      "Bash(cp /Users/jalaj.singh/Downloads/download.png /Users/jalaj.singh/Downloads/perf-tracker/src/app/apple-icon.png)",
+      "Bash(curl -s 'https://chvlzilvvvbmdnhcskjm.supabase.co/rest/v1/__TRACKED_VAR__?user_id=eq.87e079a0-9802-4e8b-83ff-c21682b029fa&select=id' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNodmx6aWx2dnZibWRuaGNza2ptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDk5MTQ1MiwiZXhwIjoyMDkwNTY3NDUyfQ.opSwMk332-l_5WVhivDTTeJC9y4y8KmGjovpgPC-TRw' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNodmx6aWx2dnZibWRuaGNza2ptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDk5MTQ1MiwiZXhwIjoyMDkwNTY3NDUyfQ.opSwMk332-l_5WVhivDTTeJC9y4y8KmGjovpgPC-TRw' -H 'Prefer: count=exact' -H 'Range: 0-0' -w '\\\\n%{http_code}')",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -X PATCH 'https://chvlzilvvvbmdnhcskjm.supabase.co/rest/v1/__TRACKED_VAR__?user_id=eq.87e079a0-9802-4e8b-83ff-c21682b029fa' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNodmx6aWx2dnZibWRuaGNza2ptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDk5MTQ1MiwiZXhwIjoyMDkwNTY3NDUyfQ.opSwMk332-l_5WVhivDTTeJC9y4y8KmGjovpgPC-TRw' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNodmx6aWx2dnZibWRuaGNza2ptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDk5MTQ1MiwiZXhwIjoyMDkwNTY3NDUyfQ.opSwMk332-l_5WVhivDTTeJC9y4y8KmGjovpgPC-TRw' -H 'Content-Type: application/json' -d '{\"user_id\": \"c6fd091b-54d7-4382-8f54-e8673ada6182\"}')",
+      "Bash(curl -s -I 'https://chvlzilvvvbmdnhcskjm.supabase.co/rest/v1/__TRACKED_VAR__?user_id=eq.c6fd091b-54d7-4382-8f54-e8673ada6182&select=id' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNodmx6aWx2dnZibWRuaGNza2ptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDk5MTQ1MiwiZXhwIjoyMDkwNTY3NDUyfQ.opSwMk332-l_5WVhivDTTeJC9y4y8KmGjovpgPC-TRw' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNodmx6aWx2dnZibWRuaGNza2ptIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDk5MTQ1MiwiZXhwIjoyMDkwNTY3NDUyfQ.opSwMk332-l_5WVhivDTTeJC9y4y8KmGjovpgPC-TRw' -H 'Prefer: count=exact')",
+      "Bash(curl:*)",
+      "Bash(python3 -c \"import sys,json; print\\(json.dumps\\(json.loads\\(sys.stdin.read\\(\\)\\), indent=2\\)\\)\")",
+      "Bash(printf \"perf-tracker-webhook\")",
+      "Bash(printf \"https://perf-tracker-six.vercel.app/api/strava/callback\")",
+      "Bash(printf \"218535\")",
+      "Bash(printf \"bb04f5c52bceb1f3884d786854b8f5f441f5dca4\")",
+      "Bash(git:*)"
     ]
   }
 }
