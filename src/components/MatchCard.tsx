@@ -1,5 +1,6 @@
 import { ActivityWithMatch } from "@/lib/types";
 import Link from "next/link";
+import DeleteButton from "./DeleteButton";
 
 interface MatchCardProps {
   activity: ActivityWithMatch;
@@ -10,6 +11,7 @@ export default function MatchCard({ activity }: MatchCardProps) {
   const date = new Date(activity.started_at).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
+    timeZone: "America/New_York",
   });
 
   if (!md) {
@@ -24,12 +26,15 @@ export default function MatchCard({ activity }: MatchCardProps) {
           {activity.avg_heart_rate && <span>{activity.avg_heart_rate} avg HR</span>}
           {activity.duration_minutes && <span>{Math.round(activity.duration_minutes)} min</span>}
         </div>
-        <Link
-          href={`/log/${activity.id}`}
-          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-        >
-          Log details
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href={`/log/${activity.id}`}
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Log details
+          </Link>
+          <DeleteButton activityId={activity.id} />
+        </div>
       </div>
     );
   }
@@ -70,12 +75,15 @@ export default function MatchCard({ activity }: MatchCardProps) {
         <p className="text-sm text-gray-500 italic mb-3">{md.notes}</p>
       )}
 
-      <Link
-        href={`/log/${activity.id}`}
-        className="text-sm text-gray-400 hover:text-gray-600 font-medium"
-      >
-        Edit
-      </Link>
+      <div className="flex items-center gap-4">
+        <Link
+          href={`/log/${activity.id}`}
+          className="text-sm text-gray-400 hover:text-gray-600 font-medium"
+        >
+          Edit
+        </Link>
+        <DeleteButton activityId={activity.id} />
+      </div>
     </div>
   );
 }

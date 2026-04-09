@@ -121,3 +121,56 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json(data);
 }
+
+// DELETE: remove an activity and its match details
+export async function DELETE(req: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const { searchParams } = req.nextUrl;
+  const activityId = searchParams.get("id");
+  const matchDetailId = searchParams.get("match_detail_id");
+
+  const serviceDb = createServiceClient();
+
+  // Delete a standalone match detail (no linked activity)
+  if (matchDetailId) {
+    const { error } = await serviceDb
+      .from("match_details")
+      .delete()
+      .eq("id", matchDetailId)
+      .eq("user_id", user.id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // Delete an activity (cascade deletes its match_details)
+  if (activityId) {
+    // Delete match details first
+    await serviceDb
+      .from("match_details")
+      .delete()
+      .eq("activity_id", activityId)
+      .eq("user_id", user.id);
+
+    const { error } = await serviceDb
+      .from("activities")
+      .delete()
+      .eq("id", activityId)
+      .eq("user_id", user.id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  return NextResponse.json({ error: "Missing id or match_detail_id" }, { status: 400 });
+}

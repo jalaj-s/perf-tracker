@@ -43,7 +43,22 @@ export interface FitnessInsight {
   distanceChange: number;
 }
 
-export type Insight = FormatInsight | LeagueInsight | RecoveryInsight | FitnessInsight;
+export interface PositionStats {
+  position: string;
+  matches: number;
+  avgRating: number;
+  goals: number;
+  assists: number;
+}
+
+export interface PositionInsight {
+  type: "position";
+  positions: PositionStats[];
+  bestPosition: string;
+  bestRating: number;
+}
+
+export type Insight = FormatInsight | LeagueInsight | RecoveryInsight | FitnessInsight | PositionInsight;
 
 // --- Helpers ---
 
@@ -197,6 +212,48 @@ export function computeRecoveryInsight(
     avgRatingOtherwise: avgOtherwise,
     threshold,
     lowRatedCount: afterLong.length,
+  };
+}
+
+export function computePositionInsight(
+  allMatchDetails: MatchDetailsWithLeague[]
+): PositionInsight | null {
+  const byPosition = new Map<string, { ratings: number[]; goals: number; assists: number }>();
+
+  for (const md of allMatchDetails) {
+    if (!md.positions || md.positions.length === 0) continue;
+    for (const pos of md.positions) {
+      if (!byPosition.has(pos)) {
+        byPosition.set(pos, { ratings: [], goals: 0, assists: 0 });
+      }
+      const entry = byPosition.get(pos)!;
+      if (md.rating) entry.ratings.push(md.rating);
+      entry.goals += md.goals;
+      entry.assists += md.assists;
+    }
+  }
+
+  const positions: PositionStats[] = [];
+  for (const [position, entry] of Array.from(byPosition.entries())) {
+    if (entry.ratings.length < 2) continue;
+    positions.push({
+      position,
+      matches: entry.ratings.length,
+      avgRating: round1(avg(entry.ratings)),
+      goals: entry.goals,
+      assists: entry.assists,
+    });
+  }
+
+  if (positions.length < 2) return null;
+
+  positions.sort((a, b) => b.avgRating - a.avgRating);
+
+  return {
+    type: "position",
+    positions,
+    bestPosition: positions[0].position,
+    bestRating: positions[0].avgRating,
   };
 }
 

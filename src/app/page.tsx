@@ -9,9 +9,10 @@ import SyncButton from "@/components/SyncButton";
 import RangePicker from "@/components/RangePicker";
 import LeagueFilter from "@/components/LeagueFilter";
 import InsightCard from "@/components/InsightCard";
-import { computeFormatInsight, computeLeagueInsight, computeRecoveryInsight, computeFitnessInsight } from "@/lib/insights";
+import { computeFormatInsight, computeLeagueInsight, computeRecoveryInsight, computeFitnessInsight, computePositionInsight } from "@/lib/insights";
 import Link from "next/link";
 import SignOutButton from "@/components/SignOutButton";
+import DeleteButton from "@/components/DeleteButton";
 
 function getDateRange(range: string): { start: Date | null; label: string } {
   const now = new Date();
@@ -19,24 +20,24 @@ function getDateRange(range: string): { start: Date | null; label: string } {
     case "3m": {
       const d = new Date();
       d.setMonth(d.getMonth() - 3);
-      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` };
+      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" })}` };
     }
     case "6m": {
       const d = new Date();
       d.setMonth(d.getMonth() - 6);
-      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` };
+      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" })}` };
     }
     case "1y": {
       const d = new Date();
       d.setFullYear(d.getFullYear() - 1);
-      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` };
+      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" })}` };
     }
     case "all":
       return { start: null, label: "All time" };
     default: {
       const d = new Date();
       d.setDate(d.getDate() - 28);
-      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` };
+      return { start: d, label: `${d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })} \u2013 ${now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" })}` };
     }
   }
 }
@@ -146,7 +147,7 @@ export default async function Dashboard({
     ? allMatchDetails.find((m) => m.rating === bestRating)
     : null;
   const bestRatingDate = bestRatingMatch
-    ? new Date(bestRatingMatch.match_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    ? new Date(bestRatingMatch.match_date).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })
     : "";
 
   const matchDistances = matches
@@ -169,6 +170,12 @@ export default async function Dashboard({
     .map((m) => ({
       date: m.match_date,
       value: m.rating!,
+      league: m.league?.name || null,
+      format: m.league?.format || null,
+      result: m.result,
+      goals: m.goals,
+      assists: m.assists,
+      positions: m.positions,
     }));
 
   return (
@@ -280,7 +287,7 @@ export default async function Dashboard({
                         </span>
                       </div>
                       <p className="text-sm text-gray-500 mb-3">
-                        {new Date(md.match_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        {new Date(md.match_date).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })}
                         {md.positions && ` \u00b7 ${md.positions.join(" / ")}`}
                         {md.result && ` \u00b7 ${md.result}`}
                       </p>
@@ -290,7 +297,8 @@ export default async function Dashboard({
                           {md.goals} goal{md.goals !== 1 ? "s" : ""} {"\u00b7"} {md.assists} assist{md.assists !== 1 ? "s" : ""}
                         </span>
                       </div>
-                      {md.notes && <p className="text-sm text-gray-500 italic">{md.notes}</p>}
+                      {md.notes && <p className="text-sm text-gray-500 italic mb-3">{md.notes}</p>}
+                      <DeleteButton matchDetailId={md.id} />
                     </div>
                   );
                 })}
@@ -318,10 +326,11 @@ export default async function Dashboard({
       {(() => {
         const formatInsight = computeFormatInsight(allMatchDetails, matches);
         const leagueInsight = computeLeagueInsight(allMatchDetails);
+        const positionInsight = computePositionInsight(allMatchDetails);
         const recoveryInsight = computeRecoveryInsight(matches, runs, allMatchDetails);
         const fitnessInsight = computeFitnessInsight(matches);
 
-        const hasInsights = formatInsight || leagueInsight || recoveryInsight || fitnessInsight;
+        const hasInsights = formatInsight || leagueInsight || positionInsight || recoveryInsight || fitnessInsight;
         if (!hasInsights) return null;
 
         return (
@@ -354,6 +363,24 @@ export default async function Dashboard({
                       </div>
                     ))}
                   </div>
+                </InsightCard>
+              )}
+
+              {positionInsight && (
+                <InsightCard title="Position breakdown">
+                  <div className="space-y-2">
+                    {positionInsight.positions.map((p) => (
+                      <div key={p.position} className="flex items-center justify-between">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{p.position}</span>
+                        <div className="flex gap-3 text-xs">
+                          <span>{p.matches} matches</span>
+                          <span>{p.avgRating} avg</span>
+                          <span>{p.goals}G / {p.assists}A</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">Best position: <strong>{positionInsight.bestPosition}</strong> ({positionInsight.bestRating} avg)</p>
                 </InsightCard>
               )}
 

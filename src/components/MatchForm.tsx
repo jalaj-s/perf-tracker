@@ -138,6 +138,7 @@ export default function MatchForm({ activity, initialLeagues, existingMatch }: M
               weekday: "long",
               month: "short",
               day: "numeric",
+              timeZone: "America/New_York",
             })}
           </p>
           <p className="font-medium">{activity.name}</p>

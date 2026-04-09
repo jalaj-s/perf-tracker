@@ -8,6 +8,7 @@ export default function RunCard({ activity }: RunCardProps) {
   const date = new Date(activity.started_at).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
+    timeZone: "America/New_York",
   });
 
   return (
