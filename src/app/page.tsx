@@ -213,6 +213,14 @@ export default async function Dashboard({
       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6">
         <RangePicker />
         <LeagueFilter leagues={leagues} />
+        {leagues.length > 0 && (
+          <Link
+            href="/leagues"
+            className="text-xs text-gray-500 hover:text-gray-700 underline-offset-2 hover:underline"
+          >
+            Manage leagues
+          </Link>
+        )}
       </div>
 
       {/* Stat cards */}
